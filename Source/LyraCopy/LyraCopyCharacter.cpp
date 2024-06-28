@@ -52,12 +52,47 @@ ALyraCopyCharacter::ALyraCopyCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	InitIMCs();
 }
 
 void ALyraCopyCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+	RegisterIMCs();
+}
+
+void ALyraCopyCharacter::InitIMCs()
+{
+	// 키보드를 위한 IMC 초기화
+	KeyboardIMC = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/ThirdPerson/Input/IMC_Default_Gamepad.IMC_Default_Gamepad"));
+
+
+	// 게임패드를 위한 IMC 초기화
+	GanepadIMC = LoadObject<UInputMappingContext>(nullptr, TEXT("/Game/ThirdPerson/Input/IMC_Default_KBM.IMC_Default_KBM"));
+}
+
+void ALyraCopyCharacter::RegisterIMCs()
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (ULocalPlayer* LocalPlayer = PC->GetLocalPlayer())
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+			{
+				if (KeyboardIMC)
+				{
+					Subsystem->AddMappingContext(KeyboardIMC, 0); // 우선순위 0으로 추가
+				}
+
+				if (GanepadIMC)
+				{
+					Subsystem->AddMappingContext(GanepadIMC, 1); // 우선순위 1으로 추가
+				}
+			}
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
